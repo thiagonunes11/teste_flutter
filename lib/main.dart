@@ -98,13 +98,13 @@ class HomeScreen extends StatelessWidget {
               onPressed: () {
                 Navigator.pushNamed(context, '/addTask');
               },
-              child: Text('Add Task'),
+              child: Text('Adicionar Tarefa'),
             ),
             ElevatedButton(
               onPressed: () {
                 Navigator.pushNamed(context, '/taskList');
               },
-              child: Text('Task List'),
+              child: Text('Tarefas Cadastradas'),
             ),
           ],
         ),
@@ -285,7 +285,7 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
             SizedBox(height: 16),
             ElevatedButton(
               onPressed: _updateTask,
-              child: Text('Update Task'),
+              child: Text('Atualizar Tarefa'),
             ),
           ],
         ),
