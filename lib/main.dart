@@ -51,14 +51,35 @@ class DatabaseHelper {
   }
 
   Future<int> insert(Task task) async {
+    await open(); // Ensure database is open
     return await _database.insert('tasks', task.toMap());
   }
 
   Future<List<Task>> getTasks() async {
+    await open(); // Ensure database is open
     List<Map<String, dynamic>> maps = await _database.query('tasks');
     return List.generate(maps.length, (i) {
       return Task(id: maps[i]['id'], title: maps[i]['title']);
     });
+  }
+
+  Future<int> update(Task task) async {
+    await open(); // Ensure database is open
+    return await _database.update(
+      'tasks',
+      task.toMap(),
+      where: 'id = ?',
+      whereArgs: [task.id],
+    );
+  }
+
+  Future<int> delete(int taskId) async {
+    await open(); // Ensure database is open
+    return await _database.delete(
+      'tasks',
+      where: 'id = ?',
+      whereArgs: [taskId],
+    );
   }
 }
 
@@ -109,7 +130,9 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
 
   void _addTask() {
     Task task = Task(
-        id: DateTime.now().millisecondsSinceEpoch, title: _taskController.text);
+      id: DateTime.now().millisecondsSinceEpoch,
+      title: _taskController.text,
+    );
     _databaseHelper.insert(task).then((id) => {
           _taskController.clear(),
           Navigator.pop(context),
@@ -155,16 +178,21 @@ class _TaskListScreenState extends State<TaskListScreen> {
   @override
   void initState() {
     super.initState();
-    _databaseHelper.open().then((_) {
-      _refreshTaskList();
-    });
+    _refreshTaskList();
   }
 
-  void _refreshTaskList() {
+  Future<void> _refreshTaskList() async {
+    await _databaseHelper.open(); // Ensure database is open
     _databaseHelper.getTasks().then((tasks) {
       setState(() {
         _tasks = tasks;
       });
+    });
+  }
+
+  void _deleteTask(int taskId) {
+    _databaseHelper.delete(taskId).then((value) {
+      _refreshTaskList();
     });
   }
 
@@ -182,11 +210,85 @@ class _TaskListScreenState extends State<TaskListScreen> {
               itemBuilder: (context, index) {
                 return ListTile(
                   title: Text(_tasks[index].title),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            EditTaskScreen(task: _tasks[index]),
+                      ),
+                    ).then((value) {
+                      _refreshTaskList();
+                    });
+                  },
+                  trailing: IconButton(
+                    icon: Icon(Icons.delete),
+                    onPressed: () {
+                      _deleteTask(_tasks[index].id);
+                    },
+                  ),
                 );
               },
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class EditTaskScreen extends StatefulWidget {
+  final Task task;
+
+  EditTaskScreen({required this.task});
+
+  @override
+  _EditTaskScreenState createState() => _EditTaskScreenState();
+}
+
+class _EditTaskScreenState extends State<EditTaskScreen> {
+  final TextEditingController _taskController = TextEditingController();
+  final DatabaseHelper _databaseHelper = DatabaseHelper();
+
+  @override
+  void initState() {
+    super.initState();
+    _taskController.text = widget.task.title;
+  }
+
+  void _updateTask() {
+    Task updatedTask = Task(
+      id: widget.task.id,
+      title: _taskController.text,
+    );
+
+    _databaseHelper.update(updatedTask).then((value) {
+      Navigator.pop(context);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Edit Task'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            TextField(
+              controller: _taskController,
+              decoration: InputDecoration(labelText: 'Edit Task'),
+            ),
+            SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: _updateTask,
+              child: Text('Update Task'),
+            ),
+          ],
+        ),
       ),
     );
   }
