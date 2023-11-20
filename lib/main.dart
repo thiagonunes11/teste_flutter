@@ -152,12 +152,12 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
           children: <Widget>[
             TextField(
               controller: _taskController,
-              decoration: InputDecoration(labelText: 'Enter Task'),
+              decoration: InputDecoration(labelText: 'Descreva a tarefa'),
             ),
             SizedBox(height: 16),
             ElevatedButton(
               onPressed: _addTask,
-              child: Text('Add Task'),
+              child: Text('Adicionar tarefa'),
             ),
           ],
         ),
@@ -271,7 +271,7 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Edit Task'),
+        title: Text('Editar tarefa'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -280,7 +280,7 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
           children: <Widget>[
             TextField(
               controller: _taskController,
-              decoration: InputDecoration(labelText: 'Edit Task'),
+              decoration: InputDecoration(labelText: 'Editar tarefa'),
             ),
             SizedBox(height: 16),
             ElevatedButton(
